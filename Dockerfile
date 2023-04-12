@@ -2,6 +2,7 @@
 FROM python as builder
 WORKDIR /app
 
+
 # RUN sudo install python3
 
 # # https://www.dol.gov/agencies/eta/foreign-labor/performance
@@ -9,13 +10,16 @@ WORKDIR /app
 RUN pip install xlsx2csv
 RUN pip install sqlite-utils
 
-ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2021_Q1.xlsx /FY2021_Q1.xlsx
-RUN xlsx2csv /FY2021_Q1.xlsx /FY2021_Q1.csv
-RUN sqlite-utils insert /data.db FY2021_Q1 /FY2021_Q1.csv --csv
+RUN mkdir /data
 
-ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2021_Q2.xlsx /FY2021_Q2.xlsx
-RUN xlsx2csv /FY2021_Q2.xlsx /FY2021_Q2.csv
-RUN sqlite-utils insert /data.db FY2021_Q2 /FY2021_Q2.csv --csv
+# ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2021_Q1.xlsx /FY2021_Q1.xlsx
+# RUN xlsx2csv /FY2021_Q1.xlsx /FY2021_Q1.csv
+ADD https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv /FY2021_Q1.csv
+RUN sqlite-utils insert /data/data.db FY2021_Q1 /FY2021_Q1.csv --csv
+
+# ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2021_Q2.xlsx /FY2021_Q2.xlsx
+# RUN xlsx2csv /FY2021_Q2.xlsx /FY2021_Q2.csv
+# RUN sqlite-utils insert /data.db FY2021_Q2 /FY2021_Q2.csv --csv
 
 # ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2021_Q3.xlsx /FY2021_Q3.xlsx
 # RUN xlsx2csv /FY2021_Q3.xlsx /FY2021_Q3.csv
@@ -41,7 +45,7 @@ RUN sqlite-utils insert /data.db FY2021_Q2 /FY2021_Q2.csv --csv
 FROM datasetteproject/datasette
 WORKDIR /app
 
-COPY --from=builder /app/data.db /
+COPY --from=builder /data ./
 
 RUN datasette install datasette-graphql
 
