@@ -49,4 +49,4 @@ COPY --from=builder /data ./
 
 RUN datasette install datasette-graphql
 
-ENTRYPOINT ["datasette", "/data.db"]
+ENTRYPOINT ["datasette", "/app/data.db"]
