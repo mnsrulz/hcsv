@@ -45,4 +45,4 @@ COPY --from=builder /app/data.db /
 
 RUN datasette install datasette-graphql
 
-CMD["datasette -p 8001 -h 0.0.0.0 /data.db --setting sql_time_limit_ms 35000"]
+ENTRYPOINT ["datasette", "-p 8001 -h 0.0.0.0 /data.db --setting sql_time_limit_ms 35000"]
