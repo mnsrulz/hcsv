@@ -1,5 +1,5 @@
 # FROM ubuntu
-FROM python
+FROM python as builder
 WORKDIR /app
 
 # RUN sudo install python3
@@ -38,4 +38,11 @@ RUN sqlite-utils insert /data.db FY2021_Q2 /FY2021_Q2.csv --csv
 # ADD https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/LCA_Disclosure_Data_FY2023_Q1.xlsx /FY2023_Q1.xlsx
 # RUN xlsx2csv /FY2023_Q1.xlsx /FY2023_Q1.csv
 
+FROM datasetteproject/datasette
+WORKDIR /app
 
+COPY --from=builder /app/data.db /
+
+RUN datasette install datasette-graphql
+
+CMD["datasette -p 8001 -h 0.0.0.0 /data.db --setting sql_time_limit_ms 35000"]
