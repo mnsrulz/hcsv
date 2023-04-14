@@ -14,7 +14,7 @@ env:
   RawDataDirectory: ${{ github.workspace}}/raw
 
 jobs:
-  build:
+  dump-csv:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -39,3 +39,20 @@ jobs:
         run: dotnet tool update xlsx2csv --global
       - name: Convert to csv
         run: xlsx2csv ${{ matrix.file-name }}.xlsx
+      - name: Upload artifacts 
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.RUN_UNIQUE_ID }}_artifact_${{ matrix.file-name }}
+          if-no-files-found: ignore
+          path: reports
+          retention-days: 1
+  process-csv-data:
+    runs-on: ubuntu-latest
+    needs: dump-csv
+    if: success()
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: downloaded_artifacts
