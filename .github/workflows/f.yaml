@@ -1,0 +1,35 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Create and publish csv
+
+on:
+  workflow_dispatch:
+  
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  RawDataDirectory: ${{ github.workspace}}/raw
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file-name:
+          - LCA_Disclosure_Data_FY2021_Q1
+          - LCA_Disclosure_Data_FY2021_Q2
+    steps:
+      - uses: actions/checkout@v2
+      - uses: wei/wget@v1
+        with:
+          args: -qO- https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/${{ matrix.file-name }}.xlsx
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+      - name: Install xlsx2csv
+        run: dotnet tool update xlsx2csv --global
+      - name: Convert to csv
+        run: xlsx2csv ${{ matrix.file-name }}.xlsx
