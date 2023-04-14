@@ -30,7 +30,7 @@ jobs:
           - LCA_Disclosure_Data_FY2022_Q4
           - LCA_Disclosure_Data_FY2023_Q1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download excel file
         run: wget https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/${{ matrix.file-name }}.xlsx
       - name: Setup .NET
