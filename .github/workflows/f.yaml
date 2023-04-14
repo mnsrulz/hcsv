@@ -24,9 +24,8 @@ jobs:
           - LCA_Disclosure_Data_FY2021_Q2
     steps:
       - uses: actions/checkout@v2
-      - uses: wei/wget@v1
-        with:
-          args: -qO- https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/${{ matrix.file-name }}.xlsx
+      - name: Download excel file
+        run: wget https://www.dol.gov/sites/dolgov/files/ETA/oflc/pdfs/${{ matrix.file-name }}.xlsx
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
       - name: Install xlsx2csv
