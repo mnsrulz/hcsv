@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.RUN_UNIQUE_ID }}_artifact_${{ matrix.file-name }}
-          if-no-files-found: ignore
+          if-no-files-found: error
           path: ${{ github.workspace}}/*.csv
           retention-days: 1
   process-csv-data:
@@ -55,4 +55,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: downloaded_artifacts
+          path: csv_dumps
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: csv_dumps
