@@ -38,7 +38,7 @@ jobs:
       - name: Install xlsx2csv
         run: dotnet tool update xlsx2csv --global
       - name: Convert to csv
-        run: xlsx2csv ${{ matrix.file-name }}.xlsx /raw/${{ matrix.file-name }}.csv
+        run: xlsx2csv ${{ matrix.file-name }}.xlsx ${{ matrix.file-name }}.csv
       - name: Upload artifacts 
         uses: actions/upload-artifact@v3
         with:
