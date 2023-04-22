@@ -39,12 +39,19 @@ jobs:
         run: dotnet tool update xlsx2csv --global
       - name: Convert to csv
         run: xlsx2csv ${{ matrix.file-name }}.xlsx
+      - name: Setup python sqlite-utils
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install sqlite-utils
+      - run: sqlite-utils insert ${{ matrix.file-name }}.db ${{ matrix.file-name }} /${{ matrix.file-name }}.csv --csv
       - name: Upload artifacts 
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.RUN_UNIQUE_ID }}_artifact_${{ matrix.file-name }}
           if-no-files-found: error
-          path: ${{ github.workspace}}/*.csv
+          path: ${{ github.workspace}}/*.db
           retention-days: 1
   process-csv-data:
     runs-on: ubuntu-latest
