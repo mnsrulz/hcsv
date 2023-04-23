@@ -56,6 +56,9 @@ jobs:
           retention-days: 1
   process-csv-data:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs: dump-csv
     if: success()
     steps:
