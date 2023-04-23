@@ -12,6 +12,8 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   RawDataDirectory: ${{ github.workspace}}/raw
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   dump-csv:
@@ -48,7 +50,7 @@ jobs:
       - name: Upload artifacts 
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.RUN_UNIQUE_ID }}_artifact_${{ matrix.file-name }}
+          name: ${{ matrix.file-name }}
           if-no-files-found: error
           path: ${{ github.workspace}}/*.db
           retention-days: 1
@@ -65,3 +67,26 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: csv_dumps
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: latest=true
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
