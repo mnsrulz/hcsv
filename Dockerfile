@@ -4,6 +4,9 @@ WORKDIR /app
 
 RUN datasette install datasette-graphql
 
-ADD /csv_dumps ./
+ADD /csv_dumps/**/*.db ./data/
+ADD /run.sh ./
 
-ENTRYPOINT ["datasette", "/app/*/*.db", "-h", "0.0.0.0", "--setting","sql_time_limit_ms","30000"]
+RUN chmod +x ./run.sh
+
+CMD "/app/run.sh"
