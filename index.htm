@@ -1,0 +1,65 @@
+<html>
+
+<body>
+    <script>
+        BigInt.prototype.toJSON = function () { return this.toString() }
+    </script>
+    <script type="module">
+
+        // Import the ESM bundle (supports tree-shaking)
+        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm';
+        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+
+        // Select a bundle based on browser checks
+        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+        const worker_url = URL.createObjectURL(
+            new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+        );
+
+        // Instantiate the asynchronus version of DuckDB-wasm
+        const worker = new Worker(worker_url);
+        const logger = new duckdb.ConsoleLogger();
+        const db = new duckdb.AsyncDuckDB(logger, worker);
+        await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+        URL.revokeObjectURL(worker_url);
+
+        // Create a new connection
+        const conn = await db.connect();
+
+        // Either materialize the query result
+        //await conn.query<{v}>(`SELECT * FROM generate_series(1, 100) t(v)`);
+        // ..., or fetch the result chunks lazily
+        console.log(`batching...`);
+        // for await (const batch of await conn.send(`SELECT * FROM generate_series(1, 100) t(v)`)) {
+        //     console.log(batch);
+        // }
+
+        //https://legendary-trout-4qq55vj5vx3756r-5500.app.github.dev/app2/my_data.parquet
+        await db.registerFileURL('remote.parquet', new URL('static/my_data.parquet', document.location.href).href, 4, false);
+
+        // Query
+        //const arrowResult = await conn.query(`SELECT * FROM generate_series(1, 100) t(v)`);
+        const arrowResult = await conn.query(`SELECT EMPLOYER_NAME, count(*) AS TOTAL_PETITIONS, min("WAGE_RATE_OF_PAY_FROM") AS MIN_WAGE, max("WAGE_RATE_OF_PAY_FROM")  AS MAX_WAGE FROM 'remote.parquet' 
+        --WHERE EMPLOYER_NAME like 'Apple Inc.' --CASE_STATUS <> 'Certified'
+        GROUP BY EMPLOYER_NAME
+        ORDER BY count(*)  DESC
+        --limit 100
+        `);
+
+        // Convert arrow table to json
+        const result = arrowResult.toArray().map((row) => row.toJSON());
+
+        console.log(result);
+
+        document.querySelector('#data').innerHTML = JSON.stringify(result, null, 4);
+
+        console.log(`end batching...`);
+        // Close the connection to release memory
+        await conn.close();
+    </script>
+    <h1>hello</h1>
+    <pre id="data"></pre>
+</body>
+
+</html>

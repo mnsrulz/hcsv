@@ -1,1 +1,0 @@
-datasette /app/data/*.db -h 0.0.0.0 --setting sql_time_limit_ms 30000
